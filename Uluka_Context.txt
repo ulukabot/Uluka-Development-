@@ -1,0 +1,507 @@
+================================================================
+ULUKA ULTRA — MASTER CONTEXT FILE
+Last Updated: Session 4 (01 Mar 2026)
+================================================================
+INSTRUCTION FOR CLAUDE:
+Read this entire file before responding. This is the complete
+context for the Uluka Ultra trading EA system. The user will
+confirm which task to start and share relevant code files.
+After EVERY completed task, output an updated version of this
+file BEFORE moving to the next task.
+================================================================
+
+
+================================================================
+SECTION 1 — WHAT IS ULUKA ULTRA
+================================================================
+Uluka Ultra is a fully automated Forex trading system built on
+MetaTrader 5. It combines AI-driven trade execution with a
+cloud backend, Telegram notifications, client billing, and
+social media automation.
+
+Brand: Uluka Ultra
+Telegram bot: @UlukaOwlbot
+Admin channel: @WiseOwlUluka
+Mascot: Owl 🦉
+Colour palette:
+  Background:  #060D1A / #0D0D0D
+  Panel:       #0C1830 / #1A1A2E
+  Gold:        #F0B429 / #E8B84B
+  Cyan:        #00D4FF
+  Green:       #00FF88 / #00C851
+  Red:         #FF5555 / #FF4444
+  Purple:      #B46FFF
+  Muted text:  #8899BB
+  Dim text:    #334466
+
+
+================================================================
+SECTION 2 — SYSTEM ARCHITECTURE
+================================================================
+
+FILE: MQH v5.3 (MQL5 include file)
+  Purpose: Shared intelligence library used by both EAs
+  Key functions (known):
+    - CalculateInstitutionalLot()
+    - CalculateConfidence()
+    - GetMarketRegime()
+    - GetSessionPersonality()
+    - IsSpreadSafe()
+    - ManageBreakEven()
+    - ManageAdaptiveTrailing()
+    - GetDNARiskMultiplier()
+  Status: FILE NOT YET UPLOADED — coming next session
+
+FILE: Master EA v17.3 (MQL5 .mq5)
+  Purpose: Executes trades, manages positions, sends Telegram
+           alerts, syncs with GAS cloud backend
+  Key functions (known):
+    - OnTick()
+    - SendActivationNotification()
+    - SyncWithCloud()
+    - SendToTelegram()
+    - runFridayPayeeArchieve() — hooks into GAS
+  Status: FILE NOT YET UPLOADED — coming next session
+
+FILE: Client EA v17.3 (MQL5 .mq5)
+  Purpose: Client-side EA that mirrors master signals,
+           manages client account, sends personal reports
+  Status: FILE NOT YET UPLOADED — coming next session
+
+FILE: GAS v5.2 (Google Apps Script)
+  Purpose: Cloud backend server. Handles all webhooks from
+           EAs, billing, Telegram bot commands, reporting,
+           slide generation, email automation
+  Key functions (known):
+    - doPost() — main webhook handler
+    - doGet() — dashboard data handler
+    - getDashboardDataJSON()
+    - runFridayPayeeArchieve()
+    - runEODReport()
+    - sendToChat()
+  Status: FILE NOT YET UPLOADED — coming next session
+
+FILE: Dashboard HTML v2
+  Purpose: Investor-facing web dashboard showing live
+           account stats, trade history, performance
+  Status: FILE NOT YET UPLOADED — coming next session
+
+FILE: Fix12_Gmail_Automation.gs (COMPLETE — delivered Session 4)
+  Purpose: Gmail automation layer
+  Functions delivered:
+    - buildEmailWrapper() + email helper components
+    - sendWeeklyPerformanceEmails() — Friday 11pm
+    - checkOnboardingEmails() — Daily 9am
+    - sendOnboardingDay1/3/7()
+    - recordOnboardingStart()
+    - sendPaymentReminders() — Monday 9am
+    - markPaymentConfirmed()
+    - sendMonthlyReports()
+    - sendMonthlyReportsIfFirstOfMonth()
+    - createFix12Triggers()
+
+FILE: CreateUlukaSlideTemplates.gs (COMPLETE — delivered Session 4)
+  Purpose: Creates all 12 Google Slides card templates
+  Templates created:
+    01 SLIDE_TEMPLATE_ID        — Entry Premium
+    02 SLIDE_FREE_TEMPLATE_ID   — Entry Free
+    03 SLIDE_SL_UPDATE_ID       — SL Update
+    04 SLIDE_CLOSE_WIN_ID       — Close Win
+    05 SLIDE_CLOSE_LOSS_ID      — Close Loss
+    06 SLIDE_EOD_ID             — EOD Report
+    07 SLIDE_PAYE_ID            — PAYE Archive
+    08 SLIDE_WELCOME_PREMIUM_ID — Welcome Premium
+    09 SLIDE_WELCOME_FREE_ID    — Welcome Free
+    10 SLIDE_ACTIVATION_ID      — Activation
+    11 SLIDE_BILLING_ID         — PAYE Billing
+    12 SLIDE_CLIENT_EOD_ID      — Client EOD
+
+
+================================================================
+SECTION 3 — GOOGLE SHEET STRUCTURE
+================================================================
+
+SHEET: Billing
+  A = Client Name
+  B = Account ID
+  C = Plan
+  D = Open Balance
+  E = Close Balance
+  F = PAYE Amount
+  G = Net Profit
+  H = Pay Method
+  I = Personal Chat ID
+  J = Client Email          (added Fix12)
+  K = Onboarding_Date       (added Fix12)
+  L = Email_Day1_Sent       (added Fix12)
+  M = Email_Day3_Sent       (added Fix12)
+  N = Email_Day7_Sent       (added Fix12)
+  O = PAYE_Confirmed        (added Fix12)
+  NOTE: May need additional columns for suggestions below
+        (health score history, pause flag, milestone flag)
+
+SHEET: TradeLog
+  A = Time
+  B = Account ID
+  C = Source
+  D = Symbol
+  E = Action
+  F = Profit
+  G = Lot
+  H = Strategy
+  STATUS: Population confirmed as open finding (Task 41)
+
+SHEET: Dashboard (assumed from context)
+  Fed by getDashboardDataJSON() in GAS
+
+MASTER_SHEET_ID = constant in GAS (value not yet seen)
+
+
+================================================================
+SECTION 4 — PLANS & BILLING
+================================================================
+Plan A = Fixed monthly fee
+  - Minimum monthly tariff: $99 (currently under-billing — FIX NEEDED)
+
+Plan B = PAYE (Pay As You Earn)
+  - Platform takes 25% of net profit
+  - Client keeps 75%
+  - Billed weekly on Fridays
+  - Payment due Monday
+  - Tier boundaries exist (exact values not yet seen)
+
+Prop Firm accounts = supported
+Security deposit = held (shown in PAYE Billing slide)
+
+
+================================================================
+SECTION 5 — TELEGRAM BOT STRUCTURE
+================================================================
+Bot: @UlukaOwlbot
+Admin: @WiseOwlUluka
+Free group: separate channel (limited hoots)
+Premium group: full hoots
+
+Free group gets:
+  - Entry price + TP1 only
+  - Daily EOD teaser
+  - Up to FREE_LIMIT hoots per day
+
+Premium group gets:
+  - Full entry card (Entry, SL, TP1/2/3, RR, confidence)
+  - SL update alerts
+  - Close alerts
+  - EOD reports
+  - Weekly email reports
+  - EA automation
+
+Bot commands (existing, assumed from GAS doPost):
+  - /pause — NEW (suggestion 13, not yet built)
+  - /resume — NEW (suggestion 13, not yet built)
+  - /results — NEW (suggestion 26, not yet built)
+
+
+================================================================
+SECTION 6 — GAS TRIGGERS (known)
+================================================================
+Existing from V3:
+  runFridayPayeeArchieve  — Friday 11pm
+  runEODReport            — Daily 11pm
+
+Added by Fix12:
+  checkOnboardingEmails              — Daily 9am
+  sendPaymentReminders               — Monday 9am
+  sendMonthlyReportsIfFirstOfMonth   — Daily 8am (date-guarded)
+
+To be added (from suggestions):
+  Morning brief                      — Daily 8:30am
+  Weekly personal scorecard          — Monday 9am
+  Admin EA offline monitor           — Daily (time TBD)
+  Affiliate commission               — Monthly 1st
+
+
+================================================================
+SECTION 7 — DEVELOPMENT HISTORY
+================================================================
+
+Session 1 (23 Feb 2026):
+  Phase 1 + 2 full build
+  9 bugs fixed, 26 features added
+  SyncWithCloud, lot calc, news time, spread safety,
+  GAS routing, Monday block bug, OnTick hoot, encoding,
+  account binding, break-even, ATR trailing, symbol cooldown,
+  regime detection, CHoCH/FVG/BOS, strategy auto-switch,
+  broker binding, activation alerts
+
+Session 2 (25 Feb 2026):
+  DNA v5.3 build
+  5 bugs fixed, 8 features added
+  Health score, session personality, prop firm autopilot,
+  Guardian Angel, confidence rebuild, partial close,
+  capital growth governor
+
+Session 3 (27 Feb 2026):
+  Dashboard fixes, 8 bugs fixed, 7 features added
+  Dashboard live data, health score fix, HWID binding,
+  log throttle, hoot deduplication, free group TP1,
+  EOD reports, DNA v5.3, news buffer per-pair,
+  web dashboard, multi-TP signals
+
+Session 4 (01 Mar 2026) — THIS SESSION:
+  Delivered: Fix12_Gmail_Automation.gs (4 email functions)
+  Delivered: CreateUlukaSlideTemplates.gs (12 slide templates)
+  Delivered: Fix12_Gmail_Checklist.docx (deployment guide)
+  Delivered: HOW_TO_CREATE_GOOGLE_SLIDES.txt (setup guide)
+  Delivered: Uluka_Tracker_v4.xlsx (full tracker with 26 suggestions)
+  Built: Uluka_Context.txt (this file)
+
+
+================================================================
+SECTION 8 — OPEN FINDINGS (must fix)
+================================================================
+
+1. TradeLog not populating — HIGH — Task 41 (next Monday deploy)
+2. Activation hoot not auto-firing — HIGH — manual only currently
+3. TP1/TP2 partial close not tested — MED
+4. Client EOD to personal chat not tested — HIGH
+5. Correlation filter not tested — MED
+
+
+================================================================
+SECTION 9 — 26 SUGGESTIONS — FULL BUILD ORDER (Easiest → Hardest)
+================================================================
+
+KEY:
+  ✅ = Complete
+  🔲 = Not started
+  🔧 = In progress
+
+── TIER 1: TRIVIAL (~30 min each) ──────────────────────────────
+Files needed: Master EA v17.3 (items 7,10,11) + GAS v5.2 (item 23)
+
+🔲  #11 Daily Loss Limit 'Why' Message
+      Layer: Master EA
+      What: One SendToTelegram() call when g_daily_limit_hit fires
+            Sends "⏸️ DAILY LIMIT REACHED" with P&L breakdown
+      Why easy: Single line inside existing if-block. No logic change.
+
+🔲  #7  Break-Even Move Telegram Alert
+      Layer: Master EA
+      What: One SendToTelegram() inside ManageBreakEven() on success
+            Sends "🛡️ BREAK-EVEN SET" with symbol and new SL
+      Why easy: Event already detected. Just add message call.
+
+🔲  #10 Trailing SL Notification
+      Layer: Master EA
+      What: One SendToTelegram() inside ManageAdaptiveTrailing()
+            Sends "📈 SL SHIFTED" when trailing moves SL
+      Why easy: Trailing already runs. Add message at success point.
+
+🔲  #23 Free Channel Morning Brief (8:30am)
+      Layer: GAS
+      What: New daily 8:30am trigger. Post HTF regime + news events
+            to free Telegram group automatically
+      Why easy: All data already in GAS. New trigger + formatter only.
+
+── TIER 2: EASY (1–2h each) ────────────────────────────────────
+Files needed: GAS v5.2 (items 17,18,26,22) + Master EA v17.3 (items 12,8)
+
+🔲  #17 PAYE Minimum Monthly Tariff Enforcement
+      Layer: GAS
+      What: $99 minimum check in runFridayPayeArchive()
+            If profit share < $99 after 4+ weeks, charge minimum
+      Why easy: Pure GAS logic inside existing function.
+      NOTE: Currently under-billing Plan A clients — REVENUE FIX
+
+🔲  #18 Admin EA Offline Monitor
+      Layer: GAS
+      What: Daily job checks Last_Sync column. Alert admin via
+            Telegram if any client hasn't synced in 48h
+      Why easy: New function + trigger. Reads existing column.
+
+🔲  #26 Telegram /results Command
+      Layer: GAS
+      What: Add /results to doPost() command handler
+            Returns today's live stats from master account data
+      Why easy: GAS already handles commands. Add one new case.
+
+🔲  #22 Auto Friday Performance Post
+      Layer: GAS
+      What: After runFridayPayeArchive(), format stats and POST
+            to Twitter/X + LinkedIn via MAKE webhook
+      Why easy: Data already computed. Add formatter + fetch call.
+
+🔲  #12 Auto Tier Alert for Admin
+      Layer: Master EA
+      What: Check balance vs Plan B tier boundaries on sync
+            Send admin alert when tier boundary crossed
+      Why easy: Balance already synced. Add tier-check + alert.
+
+🔲  #8  Account Milestone Celebration Alerts
+      Layer: Master EA
+      What: OnTick() checks equity vs $1k/$2k/$5k/$10k milestones
+            Fires celebratory Telegram message on each milestone
+      Why easy: All data in EA globals. Add milestone array + flag.
+
+── TIER 3: MEDIUM (2–4h each) ──────────────────────────────────
+Files needed: GAS v5.2 + Client EA v17.3 + Master EA v17.3
+
+🔲  #14 Health Score Trend Alert
+      Layer: Client EA + GAS
+      What: GAS daily job tracks health score delta per client
+            Alert if drops >20pts in one day
+            Escalate to admin after 3 consecutive drops
+      Needs: New column in Billing for previous health score
+
+🔲  #15 Weekly Personal Scorecard (Monday 9am)
+      Layer: GAS
+      What: Monday 9am trigger. Reads TradeLog per client for week
+            Sends scorecard via Telegram (trades, win rate, P&L,
+            best/worst pair)
+      Depends: TradeLog must be populated (Task 41)
+
+🔲  #20 TradeLog Analytics Feed to Dashboard
+      Layer: GAS + Dashboard HTML
+      What: Add symbol/session/strategy win rate table to
+            getDashboardDataJSON() and HTML dashboard
+      Depends: TradeLog populated + Dashboard HTML file
+
+🔲  #9  Spread Intelligence — Adaptive Threshold
+      Layer: Master EA
+      What: Replace fixed MaxSpread with rolling 50-tick average
+            Block only when current spread > 1.8x rolling average
+      Needs: Circular buffer for 50 spread readings in MQH
+
+🔲  #19 Affiliate Commission Auto-Calculation
+      Layer: GAS
+      What: Monthly function. 25% commission on renewals per
+            affiliate. Auto-sends payout statement via Telegram
+      Needs: REFERRAL_CODE column in Billing sheet
+
+🔲  #16 Client Onboarding Milestone (10 Trades)
+      Layer: Master EA + Client EA
+      What: Send milestone message when lifetime trades hits 10
+            first time. Store flag in GAS to survive restarts
+      Needs: Persistent flag in Billing sheet
+
+🔲  #21 Client Portal via GAS Web App
+      Layer: GAS
+      What: doGet() route ?type=client_portal&account=XXXXXX
+            Returns private HTML page per client with their stats
+      Needs: Dashboard HTML file to base template on
+
+🔲  #13 Client-Side Trading Pause (/pause /resume)
+      Layer: GAS + Client EA
+      What: Telegram commands set pause flag in Billing
+            Client EA reads flag on next SyncWithCloud() call
+      Needs: New PAUSE column in Billing sheet
+
+── TIER 4: HARD (4–8h each) ────────────────────────────────────
+Files needed: MQH v5.3 + Master EA v17.3
+
+🔲  #2  Volatility Regime Position Sizing
+      Layer: MQH
+      What: ATR multiplier in CalculateInstitutionalLot()
+            If current ATR > 2x 20-period average, reduce lots 40%
+      Risk: Touches core lot calculation — full regression test needed
+
+🔲  #6  Dynamic Confidence Decay
+      Layer: MQH
+      What: Confidence decays 5pts per candle without execution
+            Stale signals auto-abandon
+      Needs: Signal timestamp tracking + candle-close detection
+
+🔲  #3  4-Timeframe Trend Stack — GetTrendStack()
+      Layer: MQH
+      What: Query M15/H1/H4/D1 trend direction per symbol
+            Returns 0–4 alignment score
+            +15 confidence bonus for 4/4 alignment
+      Needs: CopyBuffer calls on 4 timeframes efficiently
+
+🔲  #5  Correlation Basket Exposure Cap
+      Layer: MQH + Master EA
+      What: Track total directional exposure per currency
+            Block new trades if basket exceeds threshold
+      Needs: Currency extraction from symbol + lot aggregation
+
+🔲  #24 Client Win Screenshot Automation
+      Layer: GAS + Client EA
+      What: After profit > 2% trade, send client pre-filled
+            tweet template asking them to share
+      Needs: % gain calc at close + Telegram inline keyboard
+
+── TIER 5: ADVANCED (1 day+) ────────────────────────────────────
+Files needed: MQH v5.3 + GAS v5.2
+
+🔲  #1  Liquidity Sweep Detector — GetLiquiditySweep()
+      Layer: MQH
+      What: Scan last 20 candles for spike above swing high
+            then immediate reversal. Returns sweep data.
+      Complexity: Full new SMC detection algorithm
+
+🔲  #4  Session P&L Rolling Memory
+      Layer: MQH + GAS
+      What: 20-session persistent memory per session type
+            GetDNARiskMultiplier() auto-adjusts from history
+      Complexity: Cross-restart persistence via GAS sheet
+
+🔲  #25 YouTube Content Pipeline
+      Layer: GAS + MQH
+      What: Log backtests to sheet. After 5 backtests auto-
+            generate report + YouTube script + PDF
+      Complexity: 3 systems wired together
+
+
+================================================================
+SECTION 10 — DOCUMENTS INVENTORY
+================================================================
+
+DELIVERED (Claude has full content):
+  ✅ Fix12_Gmail_Automation.gs
+  ✅ Fix12_Gmail_Checklist.docx
+  ✅ HOW_TO_CREATE_GOOGLE_SLIDES.txt
+  ✅ CreateUlukaSlideTemplates.gs
+  ✅ Uluka_Tracker_v4.xlsx
+
+TO BE UPLOADED (next session):
+  🔲 Master EA v17.3 (.mq5)
+  🔲 Client EA v17.3 (.mq5)
+  🔲 GAS v5.2 (.gs or .txt)
+  🔲 MQH v5.3 (.mqh)
+  🔲 Dashboard HTML v2 (.html)
+  🔲 Master EA Manual
+  🔲 Client EA Manual
+  🔲 Affiliate Program Document
+  🔲 Pricing Plan Document
+  🔲 Executive Pitch Deck
+  🔲 Social Media Toolkit
+  🔲 Any other supporting documents
+
+
+================================================================
+SECTION 11 — NEXT SESSION INSTRUCTIONS
+================================================================
+
+STEP 1:
+  Upload all files listed in "TO BE UPLOADED" above
+
+STEP 2:
+  Claude reads all files and updates this context file
+  with full function lists, column names, constants etc.
+
+STEP 3:
+  Start with TIER 1 tasks — they need Master EA + GAS only
+  First task: #11 Daily Loss Limit 'Why' Message (~30 min)
+  Then:       #7  Break-Even Move Alert (~30 min)
+  Then:       #10 Trailing SL Notification (~30 min)
+  Then:       #23 Morning Brief (~1h)
+
+STEP 4:
+  After EACH task is confirmed working by user —
+  Claude outputs updated Uluka_Context.txt IMMEDIATELY
+  before touching the next task
+
+================================================================
+END OF CONTEXT FILE
+Version: Session 4 — 01 Mar 2026
+================================================================
